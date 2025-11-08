@@ -1,1 +1,4 @@
 project_id = "jpfazwdjtldpxilekiyo"
+
+[functions.classify-waste]
+verify_jwt = true

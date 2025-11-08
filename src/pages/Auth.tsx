@@ -1,65 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Leaf, Mail, Lock, User } from "lucide-react";
+import { Leaf } from "lucide-react";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().email("Invalid email address").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters").max(100),
+});
 
 const Auth = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate("/demo");
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) navigate("/demo");
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      authSchema.parse({ email: email.trim(), password });
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
         if (error) throw error;
-
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
-        });
-        navigate("/");
+        toast({ title: "Welcome back!", description: "Successfully logged in" });
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
-          options: {
-            data: {
-              username: username || email.split("@")[0],
-            },
-            emailRedirectTo: `${window.location.origin}/`,
-          },
+          options: { emailRedirectTo: `${window.location.origin}/demo` },
         });
 
         if (error) throw error;
-
-        toast({
-          title: "Account created!",
-          description: "Welcome to EcoSnap. Start classifying waste to earn credits!",
-        });
-        navigate("/");
+        toast({ title: "Account created!", description: "Welcome to EcoSnap" });
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({ title: "Validation error", description: error.errors[0].message, variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: "An error occurred", variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }
@@ -67,94 +71,33 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-background to-secondary/20 p-4">
-      <div className="w-full max-w-md">
-        <div className="glass-card p-8 rounded-2xl">
-          <div className="flex flex-col items-center mb-8">
-            <div className="p-4 bg-primary/10 rounded-full mb-4">
-              <Leaf className="w-12 h-12 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold text-gradient mb-2">EcoSnap</h1>
-            <p className="text-muted-foreground text-center">
-              {isLogin ? "Welcome back!" : "Join the green revolution"}
-            </p>
+      <div className="glass-card p-8 rounded-2xl max-w-md w-full">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+            <Leaf className="w-8 h-8 text-primary" />
           </div>
-
-          <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username" className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Username (optional)
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  className="bg-background/50"
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="bg-background/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="bg-background/50"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full hover-scale glow"
-              disabled={loading}
-            >
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
-            </Button>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-primary hover:underline"
-              >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
-              </button>
-            </div>
-          </form>
+          <h1 className="text-3xl font-bold mb-2">{isLogin ? "Welcome Back" : "Join EcoSnap"}</h1>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          By continuing, you agree to our Terms of Service
-        </p>
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={100} />
+          </div>
+          <Button type="submit" className="w-full hover-scale" disabled={loading}>
+            {loading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+          </button>
+        </div>
       </div>
     </div>
   );
