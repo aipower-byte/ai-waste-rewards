@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Leaf } from "lucide-react";
 
 const CallToAction = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
 
   return (
     <section ref={ref} className="py-20 relative overflow-hidden">
@@ -43,10 +45,19 @@ const CallToAction = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Button size="lg" className="text-lg px-8 hover-scale glow">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 hover-scale glow"
+              onClick={() => navigate("/auth")}
+            >
               Join Our Mission
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 hover-scale bg-white/10 backdrop-blur-sm">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 hover-scale bg-white/10 backdrop-blur-sm"
+              onClick={() => navigate("/auth")}
+            >
               Try EcoSnap Demo
             </Button>
           </motion.div>

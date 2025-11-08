@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Camera, Brain, Recycle, Coins, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Solution = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
 
   const workflow = [
     { icon: Camera, label: "Snap Photo", color: "text-blue-500" },
@@ -63,7 +65,11 @@ const Solution = () => {
               EcoSnap makes waste segregation simple, smart, and rewarding. Snap a photo, 
               let AI classify your waste, and earn EcoCredits for every correct disposal.
             </p>
-            <Button size="lg" className="hover-scale glow">
+            <Button 
+              size="lg" 
+              className="hover-scale glow"
+              onClick={() => navigate("/auth")}
+            >
               Try Live Demo
             </Button>
           </motion.div>

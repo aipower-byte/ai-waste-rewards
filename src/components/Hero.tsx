@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Camera, Sparkles, Leaf, Cpu } from "lucide-react";
 import heroMockup from "@/assets/hero-mockup.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const floatingIcons = [
     { Icon: Camera, delay: 0, position: "top-20 left-10" },
     { Icon: Sparkles, delay: 0.2, position: "top-40 right-20" },
@@ -67,10 +69,19 @@ const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <Button size="lg" className="text-lg px-8 hover-scale glow">
+              <Button 
+                size="lg" 
+                className="text-lg px-8 hover-scale glow"
+                onClick={() => navigate("/auth")}
+              >
                 Try Demo
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 hover-scale">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 hover-scale"
+                onClick={() => window.open("https://github.com", "_blank")}
+              >
                 View GitHub
               </Button>
             </motion.div>
