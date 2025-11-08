@@ -14,7 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      eco_credits_log: {
+        Row: {
+          classification_id: string | null
+          created_at: string
+          credits: number
+          description: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          classification_id?: string | null
+          created_at?: string
+          credits: number
+          description?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          classification_id?: string | null
+          created_at?: string
+          credits?: number
+          description?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eco_credits_log_classification_id_fkey"
+            columns: ["classification_id"]
+            isOneToOne: false
+            referencedRelation: "waste_classifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          total_classifications: number
+          total_credits: number
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          total_classifications?: number
+          total_credits?: number
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          total_classifications?: number
+          total_credits?: number
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      waste_classifications: {
+        Row: {
+          confidence: number
+          created_at: string
+          credits_earned: number
+          id: string
+          image_url: string
+          predicted_category: Database["public"]["Enums"]["waste_category"]
+          user_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          credits_earned?: number
+          id?: string
+          image_url: string
+          predicted_category: Database["public"]["Enums"]["waste_category"]
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          credits_earned?: number
+          id?: string
+          image_url?: string
+          predicted_category?: Database["public"]["Enums"]["waste_category"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +117,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      waste_category: "recyclable" | "organic" | "hazardous" | "general"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +244,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      waste_category: ["recyclable", "organic", "hazardous", "general"],
+    },
   },
 } as const
